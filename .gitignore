@@ -1,0 +1,15 @@
+# --- Neovim ---
+# Ignore the lazy-lock file if you don't want to sync exact versions (optional, but recommended to KEEP it)
+# lazy-lock.json 
+
+# Ignore undo history and swap files
+*.swp
+undo/
+
+# --- Tmux ---
+# Ignore the plugins folder (we just want the manager)
+tmux/plugins/
+!tmux/plugins/tpm
+
+# --- macOS Junk ---
+.DS_Store
