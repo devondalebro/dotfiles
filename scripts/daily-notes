@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# --- CONFIGURATION ---
+NOTES_DIR="$HOME/notes"
+TEMPLATE_FILE="$NOTES_DIR/templates/daily_template.md"
+DATE=$(date +%Y-%m-%d)
+TARGET_FILE="$NOTES_DIR/daily/$DATE.md"
+
+# --- LOGIC ---
+
+# 1. Ensure the daily directory exists (just in case)
+mkdir -p "$NOTES_DIR/daily"
+
+# 2. Check if the note already exists
+if [ ! -f "$TARGET_FILE" ]; then
+    # It doesn't exist, so we create it.
+    
+    if [ -f "$TEMPLATE_FILE" ]; then
+        # Template exists: Read it, replace {{DATE}} with actual date, write to target
+        sed "s/{{DATE}}/$DATE/g" "$TEMPLATE_FILE" > "$TARGET_FILE"
+        echo "Created new note from template."
+    else
+        # Template missing: Create a basic file so the script doesn't crash
+        echo "# $DATE" > "$TARGET_FILE"
+        echo "Template not found. Created blank note."
+    fi
+fi
+
+# 3. Open the file in Neovim
+# We use 'exec' so nvim takes over this process completely
+if [[ "$1" == "v" ]]; then
+  exec nvim "$TARGET_FILE"
+else
+  exec touch "$TARGET_FILE"
+fi
