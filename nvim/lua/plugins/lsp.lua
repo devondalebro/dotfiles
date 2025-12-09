@@ -6,30 +6,31 @@ return {
         'hrsh7th/nvim-cmp',
         'hrsh7th/cmp-nvim-lsp',
         'L3MON4D3/LuaSnip',
+        -- --> 1. NEW: Add these two plugins for LaTeX power
+        'rafamadriz/friendly-snippets', -- Massive collection of pre-made snippets
+        'kdheepak/cmp-latex-symbols',   -- Emoji/Symbol completion (e.g., \alpha)
     },
 
     config = function()
-        -- 1. Setup Mason (The Installer)
+        -- 1. Setup Mason
         require("mason").setup()
         
         -- 2. Setup Mason-LSPConfig
-        -- In 2.0, this handles the "auto-enabling" of servers effectively
         require("mason-lspconfig").setup({
-            ensure_installed = { "lua_ls", "pyright", "html" , "markdown_oxide" },
+            -- --> 2. NEW: Add "texlab" to this list
+            ensure_installed = { "lua_ls", "pyright", "html", "markdown_oxide", "texlab" },
             automatic_installation = true, 
         })
 
-        -- 3. Define Capabilities (for Autocomplete)
+        -- 3. Define Capabilities
         local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-        -- 4. The NEW Way: Configure Servers globally (Neovim 0.11+)
-        -- The '*' key applies this config to ALL servers, including those Mason installs
+        -- 4. Global Server Config
         vim.lsp.config('*', {
             capabilities = capabilities,
         })
 
-        -- 5. Specific Server Overrides (e.g., Lua)
-        -- Instead of a handler, you just configure the specific server directly
+        -- 5. Specific Server Overrides
         vim.lsp.config('lua_ls', {
             settings = {
                 Lua = {
@@ -38,8 +39,23 @@ return {
             }
         })
 
-        -- 6. Autocomplete (CMP) - Same as before
+        -- --> 3. NEW: Force texlab to attach to markdown files
+        vim.lsp.config('texlab', {
+            filetypes = { "tex", "bib", "markdown" }, -- The magic line
+            settings = {
+                texlab = {
+                    -- Optional: Disable texlab's linting if it gets annoying in markdown
+                    diagnostics = { ignoredPatterns = { "^chktex$" } }
+                }
+            }
+        })
+
+        -- 6. Autocomplete (CMP)
         local cmp = require('cmp')
+        
+        -- --> 4. NEW: Load the friendly-snippets library
+        require("luasnip.loaders.from_vscode").lazy_load()
+
         cmp.setup({
             snippet = {
                 expand = function(args)
@@ -57,10 +73,12 @@ return {
             sources = cmp.config.sources({
                 { name = 'nvim_lsp' },
                 { name = 'luasnip' },
+                -- --> 5. NEW: Add the latex symbol source
+                { name = 'latex_symbols', option = { strategy = 0 } }, 
             })
         })
 
-        -- 7. Keybindings (LspAttach) - Same as before
+        -- 7. Keybindings
         vim.api.nvim_create_autocmd('LspAttach', {
             desc = 'LSP actions',
             callback = function(event)

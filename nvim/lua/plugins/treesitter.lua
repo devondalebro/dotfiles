@@ -6,8 +6,9 @@ return {
             -- A list of parser names, or "all"
             ensure_installed = { 
                 "c", "lua", "vim", "vimdoc", "query", -- Standards
-                "markdown", 
-                "markdown_inline" -- IMPORTANT: This handles bold/links/italics inside markdown
+                "markdown",
+                "markdown_inline", -- IMPORTANT: This handles bold/links/italics inside markdown
+
             },
 
             -- Install parsers synchronously (only applied to `ensure_installed`)
