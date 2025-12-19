@@ -3,82 +3,95 @@ return {
     dependencies = {
         'williamboman/mason.nvim',
         'williamboman/mason-lspconfig.nvim',
-        'hrsh7th/nvim-cmp',
-        'hrsh7th/cmp-nvim-lsp',
-        'L3MON4D3/LuaSnip',
-        -- --> 1. NEW: Add these two plugins for LaTeX power
-        'rafamadriz/friendly-snippets', -- Massive collection of pre-made snippets
-        'kdheepak/cmp-latex-symbols',   -- Emoji/Symbol completion (e.g., \alpha)
+        'saghen/blink.cmp',
     },
 
     config = function()
-        -- 1. Setup Mason
+        -- 1. Setup Mason (The installer)
         require("mason").setup()
         
-        -- 2. Setup Mason-LSPConfig
+        -- 2. Define the Mason servers we want
+        local mason_servers = { "lua_ls", "markdown_oxide" }
+
+        -- 3. Ensure they are downloaded
         require("mason-lspconfig").setup({
-            -- --> 2. NEW: Add "texlab" to this list
-            ensure_installed = { "lua_ls", "pyright", "html", "markdown_oxide", "texlab" },
-            automatic_installation = true, 
+            ensure_installed = mason_servers,
+            automatic_installation = true,
         })
 
-        -- 3. Define Capabilities
-        local capabilities = require('cmp_nvim_lsp').default_capabilities()
+        -- 4. Get Capabilities (for Autocomplete)
+        local capabilities = require('blink.cmp').get_lsp_capabilities()
 
-        -- 4. Global Server Config
-        vim.lsp.config('*', {
+        -- =========================================================
+        --  PART A: MASON SERVERS (Loop and Enable)
+        --  Instead of using the broken 'setup_handlers', we just loop manually.
+        -- =========================================================
+        for _, server in ipairs(mason_servers) do
+            vim.lsp.config[server] = { capabilities = capabilities }
+            
+            -- Special settings for Lua
+            if server == "lua_ls" then
+                vim.lsp.config.lua_ls = {
+                    capabilities = capabilities,
+                    settings = {
+                        Lua = { diagnostics = { globals = { "vim" } } }
+                    }
+                }
+            end
+
+            -- Enable the server
+            vim.lsp.enable(server)
+        end
+
+        -- =========================================================
+        --  PART B: ARISTA SYSTEM SERVERS (Clangd, Jedi)
+        --  These are installed via yum/pip, so we config them manually.
+        -- =========================================================
+
+        -- C++ / TIN / ITIN (clangd)
+        vim.lsp.config.clangd = {
             capabilities = capabilities,
+            cmd = { "clangd", "--background-index", "--clang-tidy" },
+            filetypes = { "c", "cpp", "objc", "objcpp", "tin", "itin" },
+            root_dir = vim.fs.root(0, { "compile_commands.json", ".git" }) or "/src",
+            init_options = { compilationDatabasePath = "/src" },
+        }
+        vim.lsp.enable("clangd")
+
+      -- PYTHON (Pyright)
+vim.lsp.config.pyright = {
+  capabilities = capabilities,
+  -- Arista-specific root logic: looks for .git, otherwise defaults to /src
+  root_dir = vim.fs.root(0, { ".git" }) or "/src",
+  settings = {
+    python = {
+      analysis = {
+        -- "basic" is recommended to avoid too much noise in large codebases
+        typeCheckingMode = "basic", 
+      }
+    }
+  }}
+vim.lsp.enable("pyright")
+
+        -- =========================================================
+        --  PART C: CUSTOM ARISTA SERVERS (Tac)
+        -- =========================================================
+        vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
+            pattern = { "*.tac" },
+            callback = function()
+                vim.lsp.start({
+                    name = "tacc",
+                    cmd = { "/usr/bin/artaclsp" },
+                    cmd_args = { "-I", "/bld/" },
+                    root_dir = "/src",
+                    capabilities = capabilities,
+                })
+            end,
         })
 
-        -- 5. Specific Server Overrides
-        vim.lsp.config('lua_ls', {
-            settings = {
-                Lua = {
-                    diagnostics = { globals = { "vim" } }
-                }
-            }
-        })
-
-        -- --> 3. NEW: Force texlab to attach to markdown files
-        vim.lsp.config('texlab', {
-            filetypes = { "tex", "bib", "markdown" }, -- The magic line
-            settings = {
-                texlab = {
-                    -- Optional: Disable texlab's linting if it gets annoying in markdown
-                    diagnostics = { ignoredPatterns = { "^chktex$" } }
-                }
-            }
-        })
-
-        -- 6. Autocomplete (CMP)
-        local cmp = require('cmp')
-        
-        -- --> 4. NEW: Load the friendly-snippets library
-        require("luasnip.loaders.from_vscode").lazy_load()
-
-        cmp.setup({
-            snippet = {
-                expand = function(args)
-                    require('luasnip').lsp_expand(args.body)
-                end,
-            },
-            mapping = cmp.mapping.preset.insert({
-                ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-                ['<C-f>'] = cmp.mapping.scroll_docs(4),
-                ['<C-Space>'] = cmp.mapping.complete(),
-                ['<CR>'] = cmp.mapping.confirm({ select = true }),
-                ['<Tab>'] = cmp.mapping.select_next_item(),
-                ['<S-Tab>'] = cmp.mapping.select_prev_item(),
-            }),
-            sources = cmp.config.sources({
-                { name = 'nvim_lsp' },
-                { name = 'luasnip' },
-                -- --> 5. NEW: Add the latex symbol source
-                { name = 'latex_symbols', option = { strategy = 0 } }, 
-            })
-        })
-
-        -- 7. Keybindings
+        -- =========================================================
+        --  PART D: KEYBINDINGS
+        -- =========================================================
         vim.api.nvim_create_autocmd('LspAttach', {
             desc = 'LSP actions',
             callback = function(event)
