@@ -1,0 +1,24 @@
+# --- THEME ---
+# If downloading manually (Solution B), this works.
+# If using built-in, try "catppuccin-mocha" or check `ghostty +list-themes`
+theme = catppuccin-mocha
+
+# --- FONT ---
+font-family = "Hack Nerd Font Mono"
+font-size = 14
+adjust-cell-height = 10%
+
+# --- WINDOW LOOK ---
+# REMOVED: window-blur = true (This was the error)
+background-opacity = 0.9
+window-padding-x = 10
+window-padding-y = 10
+
+macos-titlebar-style = transparent
+
+# --- BEHAVIOR ---
+macos-option-as-alt = true
+mouse-hide-while-typing = true
+
+# --- TMUX (Optional) ---
+# command = /opt/homebrew/bin/tmux new -A -s main

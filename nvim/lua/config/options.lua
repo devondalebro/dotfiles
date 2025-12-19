@@ -15,4 +15,8 @@ vim.opt.termguicolors = true      -- Better colors
 -- sync w system clipboard
 vim.opt.clipboard = 'unnamedplus'
 
+-- Set a vertical line at the 80th character
+vim.opt.colorcolumn = "80"
+vim.opt.wrap = true
+vim.opt.linebreak = true -- Break at words rather than random characters
 

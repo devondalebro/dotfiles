@@ -37,3 +37,4 @@ function edaily() {
 
 # Alias for when you just want the path string
 alias daily="daily_path"
+eval "$(starship init zsh)"
