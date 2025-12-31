@@ -36,3 +36,7 @@ vim.filetype.add({
 if vim.fn.filereadable('/usr/share/vim/vimfiles/arista.vim') == 1 then
    vim.cmd([[source /usr/share/vim/vimfiles/arista.vim]])
 end
+
+-- Sync clipboard between OS and Neovim.
+-- "unnamedplus" allows the clipboard register '+' to be used as the default register
+vim.opt.clipboard = "unnamedplus"
