@@ -32,3 +32,20 @@ vim.filetype.add({
 if vim.fn.filereadable('/usr/share/vim/vimfiles/arista.vim') == 1 then
    vim.cmd([[source /usr/share/vim/vimfiles/arista.vim]])
 end
+
+-- Use OSC 52 for the system clipboard (+)
+vim.g.clipboard = {
+   name = "OSC 52",
+   copy = {
+      ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+      ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+   },
+   paste = {
+      ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
+      ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
+   },
+}
+
+-- Optional: Add standard shortcuts for system copy/paste
+vim.keymap.set({ "n", "v" }, "<leader>y", '"+y', { desc = "Copy to system clipboard" })
+vim.keymap.set({ "n", "v" }, "<leader>p", '"+p', { desc = "Paste from system clipboard" })
