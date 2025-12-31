@@ -17,6 +17,10 @@ vim.opt.termguicolors = true -- Better colors
 
 vim.opt.colorcolumn = "85"
 
+-- Set a vertical line at the 80th character
+vim.opt.colorcolumn = "80"
+vim.opt.wrap = true
+vim.opt.linebreak = true -- Break at words rather than random characters
 
 -- Treat Arista .tin/.itin files as C++ so clangd can read them
 vim.filetype.add({
@@ -33,7 +37,6 @@ if vim.fn.filereadable('/usr/share/vim/vimfiles/arista.vim') == 1 then
    vim.cmd([[source /usr/share/vim/vimfiles/arista.vim]])
 end
 
--- Use OSC 52 for the system clipboard (+)
 vim.g.clipboard = {
    name = "OSC 52",
    copy = {
@@ -49,3 +52,7 @@ vim.g.clipboard = {
 -- Optional: Add standard shortcuts for system copy/paste
 vim.keymap.set({ "n", "v" }, "<leader>y", '"+y', { desc = "Copy to system clipboard" })
 vim.keymap.set({ "n", "v" }, "<leader>p", '"+p', { desc = "Paste from system clipboard" })
+
+-- Sync clipboard between OS and Neovim.
+-- "unnamedplus" allows the clipboard register '+' to be used as the default register
+vim.opt.clipboard = "unnamedplus"
