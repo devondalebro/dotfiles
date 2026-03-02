@@ -4,11 +4,11 @@ vim.opt.relativenumber = true -- Relative line numbers
 vim.opt.mouse = 'a'           -- Enable mouse mode
 
 vim.opt.tabstop = 8
-vim.opt.shiftwidth = 3
-vim.opt.softtabstop = 3
+vim.opt.shiftwidth = 4
+vim.opt.softtabstop = 4
 vim.opt.expandtab = true
 
-vim.opt.scrolloff = 4
+vim.opt.scrolloff = 8
 
 vim.opt.ignorecase = true    -- Search case-insensitively
 vim.opt.smartcase = true     -- ...unless you type a Capital letter
@@ -22,37 +22,4 @@ vim.opt.colorcolumn = "80"
 vim.opt.wrap = true
 vim.opt.linebreak = true -- Break at words rather than random characters
 
--- Treat Arista .tin/.itin files as C++ so clangd can read them
-vim.filetype.add({
-   extension = {
-      tin = 'cpp',
-      itin = 'cpp',
-      tac = 'tac'
-   }
-})
-
--- Arista Specific Configuration
--- Source the system-wide vim settings if they exist
-if vim.fn.filereadable('/usr/share/vim/vimfiles/arista.vim') == 1 then
-   vim.cmd([[source /usr/share/vim/vimfiles/arista.vim]])
-end
-
-vim.g.clipboard = {
-   name = "OSC 52",
-   copy = {
-      ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-      ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
-   },
-   paste = {
-      ["+"] = require("vim.ui.clipboard.osc52").paste("+"),
-      ["*"] = require("vim.ui.clipboard.osc52").paste("*"),
-   },
-}
-
--- Optional: Add standard shortcuts for system copy/paste
-vim.keymap.set({ "n", "v" }, "<leader>y", '"+y', { desc = "Copy to system clipboard" })
-vim.keymap.set({ "n", "v" }, "<leader>p", '"+p', { desc = "Paste from system clipboard" })
-
--- Sync clipboard between OS and Neovim.
--- "unnamedplus" allows the clipboard register '+' to be used as the default register
 vim.opt.clipboard = "unnamedplus"
